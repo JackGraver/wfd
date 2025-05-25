@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from db import get_db
 from models import *
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Dict
 
 app = FastAPI()
 
@@ -22,20 +24,95 @@ async def read_root():
 
 @app.get("/restaurants")
 async def get_restaurants(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Restaurant))
+    result = await db.execute(
+        select(Restaurant).options(selectinload(Restaurant.categories))
+    )
     restaurants = result.scalars().all()
+
     return restaurants
+
+@app.get("/categories")
+async def get_restaurants_and_categories(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Category))
+    categories = result.scalars().all()
+
+    return categories
 
 @app.post("/restaurants")
 async def create_restaurant(
     restaurant: RestaurantCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    new_restaurant = Restaurant(**restaurant.model_dump())
+    # 1. Create the restaurant
+    new_restaurant = Restaurant(
+        name=restaurant.name,
+        description=restaurant.description,
+        price=restaurant.price,
+        location=restaurant.location,
+        rating=restaurant.rating,
+        visited=restaurant.visited,
+    )
+
+    all_categories: List[Category] = []
+
+    if restaurant.categories:
+        # 2. Separate existing vs. new categories
+        existing_ids = [c.id for c in restaurant.categories if c.id != -1]
+        new_names = [c.name for c in restaurant.categories if c.id == -1]
+
+        print('nn ======================', new_names)
+
+
+        # 3. Fetch existing categories
+        if existing_ids:
+            result = await db.execute(select(Category).where(Category.id.in_(existing_ids)))
+            all_categories.extend(result.scalars().all())
+
+        # 4. Create new categories
+        for name in new_names:
+            print('HEREEEEEEEEEEEEEE', name)
+            new_cat = Category(name=name)
+            db.add(new_cat)
+            await db.flush()  # Assigns new_cat.id from DB
+            all_categories.append(new_cat)
+
+        # 5. Assign all categories
+        new_restaurant.categories = all_categories
+
     db.add(new_restaurant)
     await db.commit()
     await db.refresh(new_restaurant)
+
     return new_restaurant
+        
+    # # Step 1: Check if the category exists
+    # result = await db.execute(
+    #     select(Category).where(Category.name == restaurant.category)
+    # )
+    # category = result.scalars().first()
+
+    # # Step 2: If not, create the category
+    # if not category:
+    #     category = Category(name=restaurant.category)
+    #     db.add(category)
+    #     await db.commit()
+    #     await db.refresh(category)
+
+    # # Step 3: Create the restaurant with category_id
+    # new_restaurant = Restaurant(
+    #     name=restaurant.name,
+    #     description=restaurant.description,
+    #     price=restaurant.price,
+    #     location=restaurant.location,
+    #     rating=restaurant.rating,
+    #     visited=restaurant.visited,
+    #     category_id=category.id
+    # )
+    # db.add(new_restaurant)
+    # await db.commit()
+    # await db.refresh(new_restaurant)
+
+    # return new_restaurant
 
 @app.post("/visited/{restaurant_id}")
 async def set_restaurant_visited(

@@ -1,100 +1,244 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Restaurant } from "../../types/Restaurant";
 import InputPopup from "./InputPopup";
+import type { Category } from "../../types/Category";
 
 type InputPopupProps = {
-  onSubmit: (restaurant: Restaurant) => void;
-  onClose: () => void;
+    categories: Category[];
+    onSubmit: (restaurant: Restaurant) => void;
+    onClose: () => void;
 };
 
 export default function RestaurantInput({
-  onSubmit,
-  onClose,
+    categories,
+    onSubmit,
+    onClose,
 }: InputPopupProps) {
-  const [formData, setFormData] = useState<Restaurant>({
-    name: "",
-    category: "",
-    price: 0,
-    description: "",
-    location: "",
-    rating: -1,
-    visited: false,
-  });
+    const [formData, setFormData] = useState<Restaurant>({
+        name: "",
+        categories: [],
+        price: 0,
+        description: "",
+        location: "",
+        rating: -1,
+        visited: false,
+    });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-    onClose();
-  };
-  return (
-    <InputPopup>
-      <h2 className="text-xl font-semibold mb-4">Add New Restaurant</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
-        <input
-          name="name"
-          placeholder="Name"
-          value={formData.name}
-          onChange={handleChange}
-          className="border rounded px-3 py-2"
-          required
-        />
-        <input
-          name="category"
-          placeholder="Category"
-          value={formData.category}
-          onChange={handleChange}
-          className="border rounded px-3 py-2"
-          required
-        />
-        <input
-          type="number"
-          name="price"
-          min={0}
-          placeholder="Enter price level"
-          onChange={handleChange}
-          value={formData.price ?? ""}
-          className="border rounded px-3 py-2"
-        />
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-          className="border rounded px-3 py-2"
-          rows={3}
-        />
-        <input
-          name="location"
-          placeholder="Location"
-          value={formData.location}
-          onChange={handleChange}
-          className="border rounded px-3 py-2"
-          required
-        />
+    const setCategories = (selected: Category[]) => {
+        setFormData((prev) => ({ ...prev, categories: selected }));
+    };
 
-        <div className="flex justify-end space-x-2 mt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Add
-          </button>
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSubmit(formData);
+        onClose();
+    };
+    return (
+        <InputPopup>
+            <h2 className="text-xl font-semibold mb-4">Add New Restaurant</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
+                <input
+                    name="name"
+                    placeholder="Name"
+                    autoComplete="off"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="border rounded px-3 py-2"
+                    required
+                />
+                <CategoryInput
+                    categories={categories}
+                    setFormCategories={setCategories}
+                />
+                <input
+                    type="number"
+                    name="price"
+                    autoComplete="off"
+                    min={0}
+                    placeholder="Enter price level"
+                    onChange={handleChange}
+                    value={formData.price ?? ""}
+                    className="border rounded px-3 py-2"
+                />
+                <textarea
+                    name="description"
+                    placeholder="Description"
+                    autoComplete="off"
+                    value={formData.description}
+                    onChange={handleChange}
+                    className="border rounded px-3 py-2"
+                    rows={3}
+                />
+                <input
+                    name="location"
+                    placeholder="Location"
+                    autoComplete="off"
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="border rounded px-3 py-2"
+                    required
+                />
+
+                <div className="flex justify-end space-x-2 mt-4">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                        Add
+                    </button>
+                </div>
+            </form>
+        </InputPopup>
+    );
+}
+
+type CategoryInputProps = {
+    categories: Category[];
+    setFormCategories: (selected: Category[]) => void;
+};
+
+function CategoryInput({
+    categories: initialCategories,
+    setFormCategories,
+}: CategoryInputProps) {
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [selectedCategories, setSelectedCategories] = useState<Category[]>(
+        []
+    );
+    const [filterText, setFilterText] = useState("");
+    const [categories, setCategories] = useState<Category[]>(initialCategories);
+
+    useEffect(() => {
+        setCategories(initialCategories);
+    }, [initialCategories]);
+
+    useEffect(() => {
+        setFormCategories(selectedCategories);
+    }, [selectedCategories]);
+
+    const updateSelected = (category: Category) => {
+        setSelectedCategories((prev) =>
+            prev.some((c) => c.id === category.id)
+                ? prev.filter((c) => c.id !== category.id)
+                : [...prev, category]
+        );
+        setFilterText("");
+    };
+
+    const handleAddNewCategory = () => {
+        const trimmed = filterText.trim();
+        if (trimmed === "") return;
+
+        const alreadyExists = categories.some(
+            (c) => c.name.toLowerCase() === trimmed.toLowerCase()
+        );
+        if (alreadyExists) return;
+
+        const newCategory: Category = {
+            id: -1,
+            name: trimmed.charAt(0).toUpperCase() + trimmed.slice(1),
+        };
+        setCategories((prev) => [newCategory, ...prev]);
+        updateSelected(newCategory);
+    };
+
+    const removeCategory = (id: number) => {
+        setSelectedCategories((prev) => prev.filter((c) => c.id !== id));
+    };
+
+    const filteredCategories = categories.filter((c) =>
+        c.name.toLowerCase().includes(filterText.toLowerCase())
+    );
+
+    return (
+        <div className="relative w-full">
+            <div
+                className="w-full border rounded px-3 py-2 flex flex-wrap gap-2 items-center cursor-text min-h-[42px]"
+                onClick={() => setShowDropdown(!showDropdown)}
+                onBlur={() => setShowDropdown(false)}
+            >
+                {selectedCategories.map((c) => (
+                    <span
+                        key={c.id}
+                        className="flex items-center bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-full text-sm"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            removeCategory(c.id!);
+                        }}
+                    >
+                        {c.name}
+                        <span className="ml-1 text-blue-500">x</span>
+                    </span>
+                ))}
+
+                <input
+                    name="category"
+                    placeholder="Search or add category"
+                    autoComplete="off"
+                    className="flex-1 min-w-[120px] outline-none"
+                    onFocus={() => setShowDropdown(true)}
+                    onChange={(e) => setFilterText(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (
+                                filterText.trim() !== "" &&
+                                !filteredCategories.some(
+                                    (c) =>
+                                        c.name.toLowerCase() ===
+                                        filterText.toLowerCase()
+                                )
+                            ) {
+                                handleAddNewCategory();
+                            }
+                        }
+                    }}
+                    value={filterText}
+                />
+            </div>
+
+            {showDropdown && (
+                <div
+                    className="absolute left-0 top-full w-full border bg-white z-10 max-h-60 overflow-y-auto"
+                    onMouseDown={(e) => e.preventDefault()}
+                >
+                    {filteredCategories.map((c, i) => (
+                        <div
+                            key={i}
+                            className="px-3 py-2 border-b hover:bg-gray-200 flex justify-between cursor-pointer"
+                            onClick={() => updateSelected(c)}
+                        >
+                            <span>{c.name}</span>
+                            {selectedCategories.some(
+                                (sc) => sc.id === c.id
+                            ) && <span className="text-red-500">×</span>}
+                        </div>
+                    ))}
+
+                    {filterText.trim() !== "" && (
+                        <div
+                            className="px-3 py-2 text-blue-500 cursor-pointer hover:bg-gray-200"
+                            onClick={handleAddNewCategory}
+                        >
+                            + Add new category “{filterText.trim()}”
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
-      </form>
-    </InputPopup>
-  );
+    );
 }
