@@ -115,3 +115,33 @@ async def get_recipe(recipe_id: int, db: AsyncSession = Depends(get_db)):
     recipes = result.scalars().one()
 
     return recipes
+
+@app.post("/recipes")
+async def create_restaurant(
+    recipe: RecipeCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    # all_categories: List[Category] = []
+
+    # if restaurant.categories:
+    #     existing_ids = [c.id for c in restaurant.categories if c.id != -1]
+    #     new_names = [c.name for c in restaurant.categories if c.id == -1]
+
+    #     if existing_ids:
+    #         result = await db.execute(select(Category).where(Category.id.in_(existing_ids)))
+    #         all_categories.extend(result.scalars().all())
+
+    #     for name in new_names:
+    #         print('HEREEEEEEEEEEEEEE', name)
+    #         new_cat = Category(name=name)
+    #         db.add(new_cat)
+    #         await db.flush() 
+    #         all_categories.append(new_cat)
+
+    #     new_restaurant.categories = all_categories
+
+    db.add(recipe)
+    await db.commit()
+    await db.refresh(recipe)
+
+    return recipe

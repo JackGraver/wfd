@@ -67,7 +67,35 @@ class RestaurantCreate(BaseModel):
     rating: int
     visited: bool
     
+    
+class Ingredient(Base):
+    __tablename__ = "ingredients"
 
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
+    name = Column(String, nullable=False)
+
+    recipe = relationship("Recipe", back_populates="ingredients")
+
+class IngredientCreate(BaseModel):
+    name: str
+    
+    
+class Step(Base):
+    __tablename__ = "steps"
+
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
+    step_number = Column(Integer, nullable=False)
+    instruction = Column(Text, nullable=False)
+
+    recipe = relationship("Recipe", back_populates="steps")
+
+class StepCreate(BaseModel):
+    step_number: int
+    instruction: str
+    
+    
 class Recipe(Base):
     __tablename__ = 'recipes'
 
@@ -82,22 +110,15 @@ class Recipe(Base):
     categories = relationship("Category", secondary=recipe_category, back_populates="recipes")
     ingredients = relationship("Ingredient", back_populates="recipe", cascade="all, delete-orphan")
     steps = relationship("Step", back_populates="recipe", cascade="all, delete-orphan", order_by="Step.step_number")
-
-class Ingredient(Base):
-    __tablename__ = "ingredients"
-
-    id = Column(Integer, primary_key=True)
-    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
-    name = Column(String, nullable=False)
-
-    recipe = relationship("Recipe", back_populates="ingredients")
     
-class Step(Base):
-    __tablename__ = "steps"
-
-    id = Column(Integer, primary_key=True)
-    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
-    step_number = Column(Integer, nullable=False)
-    instruction = Column(Text, nullable=False)
-
-    recipe = relationship("Recipe", back_populates="steps")
+class RecipeCreate(BaseModel):
+    name: str
+    prep_time: int
+    
+    calories: int
+    protein: int
+    fiber: int
+    
+    categories: List[CategoryCreate]
+    ingredients: List[IngredientCreate]
+    steps: List[StepCreate]

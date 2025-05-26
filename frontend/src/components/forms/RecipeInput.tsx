@@ -50,38 +50,64 @@ export default function RecipeInput({
         setList(updated);
     };
 
+    const handleSubmit = (e: React.FormEvent) => {
+        formData.ingredients = ingredients;
+        formData.steps = steps;
+        e.preventDefault();
+        onSubmit(formData);
+        onClose();
+    };
+
     return (
         <InputPopup>
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Add New Recipe</h2>
                 <form
-                    onSubmit={() => onSubmit}
+                    onSubmit={handleSubmit}
                     className="flex flex-col space-y-3"
                 >
-                    <input
-                        name="name"
-                        placeholder="Recipe Name"
-                        className="w-full border rounded px-3 py-2"
-                    />
+                    <div className="flex flex-row gap-1">
+                        <input
+                            name="name"
+                            placeholder="Recipe Name"
+                            className="w-full border rounded px-3 py-2"
+                            autoComplete="off"
+                            onChange={handleChange}
+                        />
+                        <input
+                            type="number"
+                            name="prep_time"
+                            placeholder="Preparation Time"
+                            className="w-full border rounded px-3 py-2"
+                            autoComplete="off"
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-1">
                         <input
                             type="number"
                             name="calories"
                             placeholder="Calories"
                             className="border rounded px-3 py-2"
+                            autoComplete="off"
+                            onChange={handleChange}
                         />
                         <input
                             type="number"
                             name="protein"
                             placeholder="Protein"
                             className="border rounded px-3 py-2"
+                            autoComplete="off"
+                            onChange={handleChange}
                         />
                         <input
                             type="number"
                             name="fiber"
                             placeholder="Fiber"
                             className="border rounded px-3 py-2"
+                            autoComplete="off"
+                            onChange={handleChange}
                         />
                     </div>
                     <CategoryInput
@@ -89,9 +115,11 @@ export default function RecipeInput({
                         setFormCategories={() => {}}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-1">
                         <div>
-                            <h3 className="font-medium mb-1">Ingredients</h3>
+                            <h3 className="text-md font-semibold mb-1">
+                                Ingredients
+                            </h3>
                             {ingredients.map((value, i) => (
                                 <input
                                     key={i}
@@ -111,7 +139,9 @@ export default function RecipeInput({
                         </div>
 
                         <div>
-                            <h3 className="font-medium mb-1">Steps</h3>
+                            <h3 className="text-md font-semibold mb-1">
+                                Steps
+                            </h3>
                             {steps.map((value, i) => (
                                 <input
                                     key={i}

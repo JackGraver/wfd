@@ -41,6 +41,7 @@ export default function RestaurantInput({
         onSubmit(formData);
         onClose();
     };
+
     return (
         <InputPopup>
             <h2 className="text-xl font-semibold mb-4">Add New Restaurant</h2>

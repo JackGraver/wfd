@@ -5,6 +5,7 @@ import RecipeInput from "../components/forms/RecipeInput";
 import RecipeMenu from "../components/RecipesMenu";
 import RecipeModal from "../components/modals/RecipeModal";
 import type { Category } from "../types/Category";
+import { addRecipe } from "../utils/AddRecipe";
 
 export default function Recipes() {
     const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -27,6 +28,14 @@ export default function Recipes() {
 
     const newRecipe = (recipe: Recipe) => {
         console.log("add recipe", recipe);
+        addRecipe(recipe)
+            .then((data) => {
+                // setWantToEat([data, ...wantToEat]);
+                console.log("inserted recipe", data);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
     };
 
     return (
