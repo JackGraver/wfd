@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import relationship
 from db import Base
 from pydantic import BaseModel
@@ -11,6 +11,14 @@ restaurant_category = Table(
     Column('category_id', ForeignKey('categories.id'), primary_key=True)
 )
 
+recipe_category = Table(
+    'recipe_category',
+    Base.metadata,
+    Column('recipe_id', ForeignKey('recipes.id'), primary_key=True),
+    Column('category_id', ForeignKey('categories.id'), primary_key=True)
+)
+
+
 class Category(Base):
     __tablename__ = "categories"
     
@@ -20,6 +28,12 @@ class Category(Base):
     restaurants = relationship(
         "Restaurant",
         secondary=restaurant_category,
+        back_populates="categories"
+    )
+    
+    recipes = relationship(
+        "Recipe",
+        secondary=recipe_category,
         back_populates="categories"
     )
 
@@ -52,3 +66,38 @@ class RestaurantCreate(BaseModel):
     location: str
     rating: int
     visited: bool
+    
+
+class Recipe(Base):
+    __tablename__ = 'recipes'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    prep_time = Column(Integer, nullable=False)
+    
+    calories = Column(Integer, nullable=False)
+    protein = Column(Integer, nullable=False)
+    fiber = Column(Integer, nullable=False)
+
+    categories = relationship("Category", secondary=recipe_category, back_populates="recipes")
+    ingredients = relationship("Ingredient", back_populates="recipe", cascade="all, delete-orphan")
+    steps = relationship("Step", back_populates="recipe", cascade="all, delete-orphan", order_by="Step.step_number")
+
+class Ingredient(Base):
+    __tablename__ = "ingredients"
+
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
+    name = Column(String, nullable=False)
+
+    recipe = relationship("Recipe", back_populates="ingredients")
+    
+class Step(Base):
+    __tablename__ = "steps"
+
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
+    step_number = Column(Integer, nullable=False)
+    instruction = Column(Text, nullable=False)
+
+    recipe = relationship("Recipe", back_populates="steps")

@@ -19,7 +19,6 @@ export default function RestaurantModal({
 
     return (
         <ModalLayout>
-            {/* Header */}
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight">
                     {restaurant.name}
@@ -28,8 +27,6 @@ export default function RestaurantModal({
                     {restaurant.location}
                 </div>
             </div>
-
-            {/* Category + Price Tag */}
             <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                 <div className="">
                     {restaurant.categories?.map((c) => (
@@ -43,13 +40,9 @@ export default function RestaurantModal({
                 </div>
                 <span className="text-[#FF5D8F]">{priceSymbol}</span>
             </div>
-
-            {/* Description */}
             <p className="text-gray-700 text-sm leading-relaxed">
                 {restaurant.description}
             </p>
-
-            {/* Visited / Not Visited Area */}
             <div className="mt-2">
                 {!restaurant.visited ? (
                     <button

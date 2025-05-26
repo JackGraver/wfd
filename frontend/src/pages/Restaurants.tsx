@@ -13,6 +13,18 @@ type NotificationInfo = {
     error: boolean;
 };
 
+export type FilterType = "rating" | "alphabetical" | "price" | "none";
+
+export const filterFunctions: Record<
+    FilterType,
+    (a: Restaurant, b: Restaurant) => number
+> = {
+    rating: (a, b) => b.rating - a.rating,
+    alphabetical: (a, b) => a.name.localeCompare(b.name),
+    price: (a, b) => a.price - b.price,
+    none: () => 0, // neutral/no sorting
+};
+
 export default function Restaurants() {
     const [showRestaurantInput, setShowRestaurantInput] = useState(false);
     const [showRatingInput, setShowRatingInput] = useState<number>(-1);
@@ -24,6 +36,8 @@ export default function Restaurants() {
     const [wantToEat, setWantToEat] = useState<Restaurant[]>([]);
     const [haveEaten, setHaveEaten] = useState<Restaurant[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+
+    const [filter, setFilter] = useState<FilterType>("none");
 
     const data = showVisited ? haveEaten : wantToEat;
 
@@ -95,6 +109,11 @@ export default function Restaurants() {
         }
     };
 
+    useEffect(() => {
+        console.log("f", filter);
+        console.log(data.sort(filterFunctions[filter]));
+    }, [filter]);
+
     return (
         <div className="p-6">
             {showRestaurantInput && (
@@ -140,12 +159,16 @@ export default function Restaurants() {
             <RestaurantsMenu
                 setShowVisited={setShowVisited}
                 showVisited={showVisited}
+                filter={filter}
+                setFilter={(filter) => {
+                    setFilter(filter);
+                }}
             />
 
             {}
             <div className="flex flex-row flex-wrap">
                 {data &&
-                    data.map((r) => (
+                    data.sort(filterFunctions[filter]).map((r) => (
                         <RestaurantModal
                             key={r.id}
                             restaurant={r}

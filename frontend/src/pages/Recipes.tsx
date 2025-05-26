@@ -1,41 +1,62 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Recipe } from "../types/Recipe";
-import RecipeSearch from "../components/RecipeSearch";
+import RecipeSearch from "../components/RecipesSearch";
 import RecipeInput from "../components/forms/RecipeInput";
+import RecipeMenu from "../components/RecipesMenu";
+import RecipeModal from "../components/modals/RecipeModal";
+import type { Category } from "../types/Category";
 
 export default function Recipes() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+    const [recipes, setRecipes] = useState<Recipe[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
 
-  const [showPopup, setShowPopup] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
 
-  return (
-    <div className="p-6">
-      {showPopup && (
-        <RecipeInput
-        // onSubmit={newRestaurant}
-        // onClose={() => setShowPopup(false)}
-        />
-      )}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Recipes</h1>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={() => {
-            setShowPopup(true);
-          }}
-        >
-          + Add Recipe
-        </button>
-      </div>
+    useEffect(() => {
+        fetch("http://192.168.4.64:8000/recipes")
+            .then((res) => res.json())
+            .then((data) => {
+                setRecipes(data);
+            });
+        fetch("http://192.168.4.64:8000/categories")
+            .then((res) => res.json())
+            .then((data) => {
+                setCategories(data);
+            });
+    }, []);
 
-      <RecipeSearch />
+    const newRecipe = (recipe: Recipe) => {
+        console.log("add recipe", recipe);
+    };
 
-      <div>Search Bar + Category Dropdown</div>
-      <div>
-        {recipes.map((r) => (
-          <div>recipe</div>
-        ))}
-      </div>
-    </div>
-  );
+    return (
+        <div className="p-6">
+            {showPopup && (
+                <RecipeInput
+                    categories={categories}
+                    onSubmit={newRecipe}
+                    onClose={() => setShowPopup(false)}
+                />
+            )}
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-3xl font-bold">Recipes</h1>
+                <button
+                    className="bg-[#FFAFCC] text-black px-4 py-2 rounded-lg hover:bg-[#FFC8DD]"
+                    onClick={() => {
+                        setShowPopup(true);
+                    }}
+                >
+                    + Add Recipe
+                </button>
+            </div>
+
+            <RecipeMenu />
+
+            <div>
+                {recipes.map((r) => (
+                    <RecipeModal recipe={r} />
+                ))}
+            </div>
+        </div>
+    );
 }
