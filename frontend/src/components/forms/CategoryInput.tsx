@@ -17,6 +17,15 @@ export default function CategoryInput({
     const [filterText, setFilterText] = useState("");
     const [categories, setCategories] = useState<Category[]>(initialCategories);
 
+    const setShowD = (v: boolean, source: string) => {
+        console.log("from", source);
+        setShowDropdown(v);
+    };
+
+    useEffect(() => {
+        console.log("sd", showDropdown);
+    }, [showDropdown]);
+
     useEffect(() => {
         setCategories(initialCategories);
     }, [initialCategories]);
@@ -63,8 +72,10 @@ export default function CategoryInput({
         <div className="relative w-full">
             <div
                 className="w-full border rounded px-3 py-2 flex flex-wrap gap-2 items-center cursor-text min-h-[42px]"
-                onClick={() => setShowDropdown(!showDropdown)}
-                onBlur={() => setShowDropdown(false)}
+                onClick={() => setShowD(!showDropdown, "2nd div onClick")}
+                onBlur={() => {
+                    setShowD(false, "2nd div onBlur");
+                }}
             >
                 {selectedCategories.map((c) => (
                     <span
@@ -85,7 +96,6 @@ export default function CategoryInput({
                     placeholder="Search or add category"
                     autoComplete="off"
                     className="flex-1 min-w-[120px] outline-none"
-                    onFocus={() => setShowDropdown(true)}
                     onChange={(e) => setFilterText(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {

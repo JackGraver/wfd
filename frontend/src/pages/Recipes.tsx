@@ -30,8 +30,7 @@ export default function Recipes() {
         console.log("add recipe", recipe);
         addRecipe(recipe)
             .then((data) => {
-                // setWantToEat([data, ...wantToEat]);
-                console.log("inserted recipe", data);
+                setRecipes([data, ...recipes]);
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -61,9 +60,9 @@ export default function Recipes() {
 
             <RecipeMenu />
 
-            <div>
+            <div className="flex flex-row flex-wrap">
                 {recipes.map((r) => (
-                    <RecipeModal recipe={r} />
+                    <RecipeModal key={r.id} recipe={r} />
                 ))}
             </div>
         </div>

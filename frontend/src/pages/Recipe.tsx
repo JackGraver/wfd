@@ -13,30 +13,11 @@ export default function Recipe() {
 
     useEffect(() => {
         if (!id) return;
-        fetch(`http://localhost:8000/recipe/${id}`)
+        fetch(`http://192.168.4.64:8000/recipe/${id}`)
             .then((res) => res.json())
             .then((data) => setRecipe(data))
             .catch((err) => console.error("Failed to fetch recipe:", err));
     }, [id]);
-
-    const ingredients = [
-        "2 cups flour",
-        "1 cup sugar",
-        "1/2 cup butter",
-        "2 eggs",
-        "1 tsp vanilla extract",
-    ];
-
-    const steps = [
-        "Preheat the oven to 350°F (175°C).",
-        "Mix the dry ingredients together in a bowl.",
-        "In another bowl, cream the butter and sugar.",
-        "Add the eggs and vanilla to the butter mixture.",
-        "Gradually add the dry ingredients to the wet mixture.",
-        "Pour the batter into a greased baking dish.",
-        "Bake for 30 minutes or until golden brown.",
-        "Let it cool before serving.",
-    ];
 
     if (!recipe) {
         return <div className="p-6">Loading recipe...</div>;
@@ -59,8 +40,8 @@ export default function Recipe() {
                             Ingredients
                         </h2>
                         <ul className="list-disc list-inside text-gray-600 space-y-1">
-                            {ingredients.map((item, i) => (
-                                <li key={i}>{item}</li>
+                            {recipe.ingredients?.map((item, i) => (
+                                <li key={i}>{item.name}</li>
                             ))}
                         </ul>
                     </div>
@@ -72,8 +53,8 @@ export default function Recipe() {
                     Steps
                 </h2>
                 <ol className="list-decimal list-inside space-y-3 text-gray-600">
-                    {steps.map((step, i) => (
-                        <li key={i}>{step}</li>
+                    {recipe.steps?.map((step, i) => (
+                        <li key={i}>{step.instruction}</li>
                     ))}
                 </ol>
             </div>

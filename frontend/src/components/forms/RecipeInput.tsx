@@ -1,6 +1,6 @@
 import { useState } from "react";
 import InputPopup from "./InputPopup";
-import type { Recipe } from "../../types/Recipe";
+import type { Ingredient, Step, Recipe } from "../../types/Recipe";
 import CategoryInput from "./CategoryInput";
 import type { Category } from "../../types/Category";
 
@@ -15,8 +15,12 @@ export default function RecipeInput({
     onSubmit,
     onClose,
 }: InputPopupProps) {
-    const [ingredients, setIngredients] = useState([""]);
-    const [steps, setSteps] = useState([""]);
+    const [ingredients, setIngredients] = useState<Ingredient[]>([
+        { name: "" },
+    ]);
+    const [steps, setSteps] = useState<Step[]>([
+        { step_number: 1, instruction: "" },
+    ]);
 
     const [formData, setFormData] = useState<Recipe>({
         name: "",
@@ -36,18 +40,31 @@ export default function RecipeInput({
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleDynamicChange = (
-        list: string[],
-        setList: (val: string[]) => void,
-        index: number,
-        value: string
-    ) => {
-        const updated = [...list];
-        updated[index] = value;
-        if (index === list.length - 1 && value.trim() !== "") {
-            updated.push("");
+    const handleIngredientChange = (index: number, value: string) => {
+        const updated = [...ingredients];
+        updated[index] = { name: value };
+
+        // Add new input if editing the last one and it's not empty
+        if (index === ingredients.length - 1 && value.trim() !== "") {
+            updated.push({ name: "" });
         }
-        setList(updated);
+
+        setIngredients(updated);
+    };
+
+    const handleStepChange = (index: number, value: string) => {
+        const updated = [...steps];
+        updated[index] = { step_number: index + 1, instruction: value };
+
+        if (index === steps.length - 1 && value.trim() !== "") {
+            updated.push({ step_number: index + 2, instruction: "" });
+        }
+
+        setSteps(updated);
+    };
+
+    const setCategories = (selected: Category[]) => {
+        setFormData((prev) => ({ ...prev, categories: selected }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -112,7 +129,7 @@ export default function RecipeInput({
                     </div>
                     <CategoryInput
                         categories={categories}
-                        setFormCategories={() => {}}
+                        setFormCategories={setCategories}
                     />
 
                     <div className="grid grid-cols-2 gap-1">
@@ -123,11 +140,9 @@ export default function RecipeInput({
                             {ingredients.map((value, i) => (
                                 <input
                                     key={i}
-                                    value={value}
+                                    value={value.name}
                                     onChange={(e) =>
-                                        handleDynamicChange(
-                                            ingredients,
-                                            setIngredients,
+                                        handleIngredientChange(
                                             i,
                                             e.target.value
                                         )
@@ -145,14 +160,9 @@ export default function RecipeInput({
                             {steps.map((value, i) => (
                                 <input
                                     key={i}
-                                    value={value}
+                                    value={value.instruction}
                                     onChange={(e) =>
-                                        handleDynamicChange(
-                                            steps,
-                                            setSteps,
-                                            i,
-                                            e.target.value
-                                        )
+                                        handleStepChange(i, e.target.value)
                                     }
                                     placeholder={`Step ${i + 1}`}
                                     className="w-full border rounded px-3 py-2 mb-2"

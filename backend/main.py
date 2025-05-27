@@ -110,38 +110,46 @@ async def get_restaurants(db: AsyncSession = Depends(get_db)):
 @app.get("/recipe/{recipe_id}")
 async def get_recipe(recipe_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Recipe).where(Recipe.id == recipe_id).options(selectinload(Recipe.categories))
+        select(Recipe)
+        .where(Recipe.id == recipe_id)
+        .options(
+            selectinload(Recipe.categories),
+            selectinload(Recipe.ingredients),
+            selectinload(Recipe.steps),
+        )
     )
-    recipes = result.scalars().one()
-
-    return recipes
+    recipe = result.scalars().one()
+    return recipe
 
 @app.post("/recipes")
-async def create_restaurant(
-    recipe: RecipeCreate,
-    db: AsyncSession = Depends(get_db)
-):
-    # all_categories: List[Category] = []
+async def create_recipe(recipe_data: RecipeCreate, db: AsyncSession = Depends(get_db)):
+    # Create SQLAlchemy Recipe instance
+    new_recipe = Recipe(
+        name=recipe_data.name,
+        prep_time=recipe_data.prep_time,
+        calories=recipe_data.calories,
+        protein=recipe_data.protein,
+        fiber=recipe_data.fiber,
+    )
 
-    # if restaurant.categories:
-    #     existing_ids = [c.id for c in restaurant.categories if c.id != -1]
-    #     new_names = [c.name for c in restaurant.categories if c.id == -1]
+    # Attach ingredients
+    new_recipe.ingredients = [Ingredient(name=ing.name) for ing in recipe_data.ingredients]
 
-    #     if existing_ids:
-    #         result = await db.execute(select(Category).where(Category.id.in_(existing_ids)))
-    #         all_categories.extend(result.scalars().all())
+    # Attach steps
+    new_recipe.steps = [
+        Step(step_number=step.step_number, instruction=step.instruction)
+        for step in recipe_data.steps
+    ]
 
-    #     for name in new_names:
-    #         print('HEREEEEEEEEEEEEEE', name)
-    #         new_cat = Category(name=name)
-    #         db.add(new_cat)
-    #         await db.flush() 
-    #         all_categories.append(new_cat)
+    # Link existing categories by ID
+    category_ids = [cat.id for cat in recipe_data.categories]
+    result = await db.execute(select(Category).where(Category.id.in_(category_ids)))
+    categories = result.scalars().all()
+    new_recipe.categories = categories
 
-    #     new_restaurant.categories = all_categories
-
-    db.add(recipe)
+    # Add and commit
+    db.add(new_recipe)
     await db.commit()
-    await db.refresh(recipe)
+    await db.refresh(new_recipe)
 
-    return recipe
+    return new_recipe

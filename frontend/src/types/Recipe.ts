@@ -8,10 +8,18 @@ export type Recipe = {
     calories: number;
     protein: number;
     fiber: number;
-    steps: string[];
-    ingredients: string[];
+    steps?: Step[];
+    ingredients?: Ingredient[];
 };
 
+export type Ingredient = {
+    name: string;
+};
+
+export type Step = {
+    step_number: number;
+    instruction: string;
+};
 // type Macros = {
 //     calories: number;
 //     protein: number;
