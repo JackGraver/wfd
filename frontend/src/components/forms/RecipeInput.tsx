@@ -170,7 +170,7 @@ export default function RecipeInput({
                             ))}
                         </div>
                     </div>
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center space-x-2 mt-4">
                         <button
                             type="button"
                             onClick={onClose}

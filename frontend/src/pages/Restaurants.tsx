@@ -7,11 +7,7 @@ import RestaurantInput from "../components/forms/RestaurantInput";
 import RatingInput from "../components/forms/RatingInput";
 import Notification from "../components/Notification";
 import type { Category } from "../types/Category";
-
-type NotificationInfo = {
-    message: string;
-    error: boolean;
-};
+import type { NotificationInfo } from "../types/NotificationInfo";
 
 export type FilterType = "rating" | "alphabetical" | "price" | "none";
 
@@ -82,6 +78,15 @@ export default function Restaurants() {
         } catch (error) {
             console.error("Error updating restaurant:", error);
         }
+    };
+
+    const deleteRestaurant = async (id: number) => {
+        setHaveEaten((prev) => prev.filter((r) => r.id !== id));
+        setWantToEat((prev) => prev.filter((r) => r.id !== id));
+        setShowNotification({
+            message: "Successfully deleted Restaurant.",
+            error: false,
+        });
     };
 
     const setToVisited = async (id: number, rating: number) => {
@@ -185,7 +190,8 @@ export default function Restaurants() {
                         <RestaurantModal
                             key={r.id}
                             restaurant={r}
-                            setRestaurant={updatedRestaurant}
+                            setRestaurants={updatedRestaurant}
+                            deleteRestaurants={deleteRestaurant}
                             setShowRatingInput={() => {
                                 setShowRatingInput(r.id!);
                             }}

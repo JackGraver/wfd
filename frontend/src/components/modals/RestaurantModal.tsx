@@ -2,20 +2,32 @@ import { useEffect, useState } from "react";
 import type { Restaurant } from "../../types/Restaurant";
 import ModalLayout from "./ModalLayout";
 import RestaurantInput from "../forms/RestaurantInput";
-import { updateRestaurant } from "../../utils/RestaurantAPI";
+import { deleteRestaurant, updateRestaurant } from "../../utils/RestaurantAPI";
+import DeleteInput from "../forms/DeleteInput";
+import Notification from "../Notification";
+import type { NotificationInfo } from "../../types/NotificationInfo";
 
 type RestaurantModalProps = {
     restaurant: Restaurant;
-    setRestaurant: (r: Restaurant) => void;
+    setRestaurants: (r: Restaurant) => void;
+    deleteRestaurants: (id: number) => void;
     setShowRatingInput: () => void;
 };
 
 export default function RestaurantModal({
     restaurant,
-    setRestaurant,
+    setRestaurants,
+    deleteRestaurants,
     setShowRatingInput,
 }: RestaurantModalProps) {
     const [showEditInput, setShowEditInput] = useState(false);
+    const [showDeleteInput, setShowDeleteInput] = useState(false);
+    const [showNotification, setShowNotification] =
+        useState<NotificationInfo>();
+
+    useEffect(() => {
+        console.log("sn", showNotification);
+    }, [showNotification]);
 
     const getPriceSymbol = (val: number): string => {
         if (val <= 20) return "$";
@@ -24,11 +36,22 @@ export default function RestaurantModal({
     };
     const priceSymbol = getPriceSymbol(restaurant.price);
 
-    const updatedRestaurant = async (restaurant: Restaurant) => {
-        console.log("ins res", restaurant);
+    const updRestaurant = async (restaurant: Restaurant) => {
         updateRestaurant(restaurant)
             .then((data) => {
-                setRestaurant(data);
+                setRestaurants(data);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+    };
+
+    const delRestaurant = async (id: number | undefined) => {
+        if (!id) return;
+
+        deleteRestaurant(id)
+            .then((_) => {
+                deleteRestaurants(id);
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -36,15 +59,32 @@ export default function RestaurantModal({
     };
 
     return (
-        <ModalLayout onEdit={setShowEditInput} onDelete={() => {}}>
+        <ModalLayout onEdit={setShowEditInput} onDelete={setShowDeleteInput}>
             {showEditInput && (
                 <RestaurantInput
                     // categories={[]}
-                    onSubmit={updatedRestaurant}
+                    onSubmit={updRestaurant}
                     onClose={() => {
                         setShowEditInput(false);
                     }}
                     editRestarant={restaurant}
+                />
+            )}
+            {showDeleteInput && (
+                <DeleteInput
+                    onConfirm={() => {
+                        delRestaurant(restaurant.id);
+                    }}
+                    onCancel={() => setShowDeleteInput(false)}
+                />
+            )}
+            {showNotification && (
+                <Notification
+                    message={showNotification.message}
+                    error={showNotification.error}
+                    onClose={() => {
+                        setShowNotification(undefined);
+                    }}
                 />
             )}
             <div className="flex flex-col gap-1">

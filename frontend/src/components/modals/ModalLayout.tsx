@@ -5,7 +5,7 @@ export default function RestaurantModal({
 }: {
     children: React.ReactNode;
     onEdit: (set: boolean) => void;
-    onDelete: () => void;
+    onDelete: (set: boolean) => void;
 }) {
     return (
         <div className="bg-white w-[340px] max-w-md ml-6 mb-6 rounded-xl shadow-md hover:shadow-xl transition-shadow">
@@ -43,10 +43,10 @@ function EditSVG({ onEdit }: { onEdit: (set: boolean) => void }) {
     );
 }
 
-function DeleteSVG({ onDelete }: { onDelete: () => void }) {
+function DeleteSVG({ onDelete }: { onDelete: (set: boolean) => void }) {
     return (
         <button
-            onClick={onDelete}
+            onClick={() => onDelete(true)}
             className="p-2 rounded hover:bg-white/30 transition-colors"
             aria-label="Edit"
         >

@@ -20,10 +20,6 @@ export default function CategoryInput({
     const [categories, setCategories] = useState<Category[]>(initialCategories);
 
     useEffect(() => {
-        console.log("sd", showDropdown);
-    }, [showDropdown]);
-
-    useEffect(() => {
         setCategories(initialCategories);
     }, [initialCategories]);
 

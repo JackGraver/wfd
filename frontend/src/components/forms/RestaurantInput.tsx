@@ -3,16 +3,15 @@ import type { Restaurant } from "../../types/Restaurant";
 import InputPopup from "./InputPopup";
 import type { Category } from "../../types/Category";
 import CategoryInput from "./CategoryInput";
+import CloseButton from "./CloseButton";
 
 type InputPopupProps = {
-    // categories: Category[];
     onSubmit: (restaurant: Restaurant) => void;
     onClose: () => void;
     editRestarant?: Restaurant;
 };
 
 export default function RestaurantInput({
-    // categories,
     onSubmit,
     onClose,
     editRestarant,
@@ -60,7 +59,13 @@ export default function RestaurantInput({
 
     return (
         <InputPopup>
-            <h2 className="text-xl font-semibold mb-4">Add New Restaurant</h2>
+            <div className="flex">
+                <h2 className="text-xl font-semibold mb-4 grow">
+                    Add New Restaurant
+                </h2>
+                <CloseButton onClose={onClose} />
+            </div>
+
             <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
                 <input
                     name="name"
@@ -102,10 +107,21 @@ export default function RestaurantInput({
                     value={formData.location}
                     onChange={handleChange}
                     className="border rounded px-3 py-2"
-                    required
                 />
+                {formData.rating != -1 && (
+                    <input
+                        type="number"
+                        name="rating"
+                        placeholder="Rating"
+                        value={formData.rating}
+                        min={0}
+                        max={5}
+                        onChange={handleChange}
+                        className="border rounded px-3 py-2"
+                    />
+                )}
 
-                <div className="flex justify-end space-x-2 mt-4">
+                <div className="flex justify-center space-x-2 mt-4">
                     <button
                         type="button"
                         onClick={onClose}

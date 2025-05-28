@@ -1,11 +1,3 @@
-import { useState } from "react";
-import type { Restaurant } from "../../types/Restaurant";
-
-type InputPopupProps = {
-    onSubmit: (restaurant: Restaurant) => void;
-    onClose: () => void;
-};
-
 export default function InputPopup({
     children,
 }: {

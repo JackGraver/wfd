@@ -34,9 +34,9 @@ export async function updateRestaurant(restaurant: Restaurant) {
     return await response.json();
 }
 
-export async function deleteRestaurant(restaurant: Restaurant) {
+export async function deleteRestaurant(restaurant: number) {
     const response = await fetch(
-        `http://192.168.4.64:8000/restaurants/${restaurant.id}`,
+        `http://192.168.4.64:8000/restaurants/${restaurant}`,
         {
             method: "DELETE",
         }
