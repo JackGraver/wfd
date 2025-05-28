@@ -67,6 +67,15 @@ class RestaurantCreate(BaseModel):
     rating: int
     visited: bool
     
+class RestaurantUpdate(BaseModel):
+    id: int
+    name: str
+    categories: List[CategoryCreate]
+    price: int
+    description: str
+    location: str
+    rating: int
+    visited: bool
     
 class Ingredient(Base):
     __tablename__ = "ingredients"

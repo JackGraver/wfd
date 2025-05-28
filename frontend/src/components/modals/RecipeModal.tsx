@@ -11,22 +11,42 @@ export default function RecipeModal({ recipe }: RecipeModalProps) {
     const navigate = useNavigate();
 
     return (
-        <ModalLayout>
+        <ModalLayout
+            onEdit={function (set: boolean): void {
+                throw new Error("Function not implemented.");
+            }}
+            onDelete={function (): void {
+                throw new Error("Function not implemented.");
+            }}
+        >
             <div className="flex flex-col gap-1">
                 {/* Title */}
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800 tracking-tight mb-1">
                         {recipe.name}
                     </h1>
-                    <div className="flex flex-wrap gap-2 text-sm text-gray-500">
-                        {recipe.categories?.map((c) => (
-                            <span
-                                key={c.id}
-                                className="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium"
-                            >
-                                {c.name}
-                            </span>
-                        ))}
+                    <div className="flex flex-wrap gap-2 text-sm text-gray-500 min-h-[2.5rem] items-center">
+                        {recipe.categories && recipe.categories.length > 0 ? (
+                            <>
+                                {recipe.categories.slice(0, 3).map((c) => (
+                                    <span
+                                        key={c.id}
+                                        className="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium"
+                                    >
+                                        {c.name}
+                                    </span>
+                                ))}
+                                {recipe.categories.length > 3 && (
+                                    <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
+                                        +{recipe.categories.length - 3}
+                                    </span>
+                                )}
+                            </>
+                        ) : (
+                            <div className="invisible px-2 py-1 rounded-full text-xs font-medium">
+                                placeholder
+                            </div>
+                        )}
                     </div>
                 </div>
 

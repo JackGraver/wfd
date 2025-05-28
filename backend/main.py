@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Body
+from fastapi import FastAPI, Depends, HTTPException, Body, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -62,7 +62,6 @@ async def create_restaurant(
             all_categories.extend(result.scalars().all())
 
         for name in new_names:
-            print('HEREEEEEEEEEEEEEE', name)
             new_cat = Category(name=name)
             db.add(new_cat)
             await db.flush() 
@@ -75,6 +74,66 @@ async def create_restaurant(
     await db.refresh(new_restaurant)
 
     return new_restaurant
+
+@app.put("/restaurants")
+async def update_restaurant(
+    restaurant_update: RestaurantUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    # Load with categories to avoid lazy-loading issues
+    result = await db.execute(
+        select(Restaurant)
+        .options(selectinload(Restaurant.categories))
+        .where(Restaurant.id == restaurant_update.id)
+    )
+    db_restaurant = result.scalars().first()
+
+    if not db_restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    # Update fields
+    db_restaurant.name = restaurant_update.name
+    db_restaurant.price = restaurant_update.price
+    db_restaurant.description = restaurant_update.description
+    db_restaurant.location = restaurant_update.location
+    db_restaurant.rating = restaurant_update.rating
+    db_restaurant.visited = restaurant_update.visited
+
+    # Handle categories
+    updated_categories: List[Category] = []
+    if restaurant_update.categories:
+        existing_ids = [c.id for c in restaurant_update.categories if c.id != -1]
+        new_names = [c.name for c in restaurant_update.categories if c.id == -1]
+
+        if existing_ids:
+            result = await db.execute(
+                select(Category).where(Category.id.in_(existing_ids))
+            )
+            updated_categories.extend(result.scalars().all())
+
+        for name in new_names:
+            new_cat = Category(name=name)
+            db.add(new_cat)
+            await db.flush()
+            updated_categories.append(new_cat)
+
+    db_restaurant.categories = updated_categories
+
+    await db.commit()
+    await db.refresh(db_restaurant)
+    return db_restaurant
+
+@app.delete("/restaurants/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_restaurant(id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Restaurant).where(Restaurant.id == id))
+    db_restaurant = result.scalars().first()
+
+    if not db_restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    await db.delete(db_restaurant)
+    await db.commit()
+
 
 @app.post("/visited/{restaurant_id}")
 async def set_restaurant_visited(

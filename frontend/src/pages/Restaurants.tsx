@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import RestaurantModal from "../components/modals/RestaurantModal";
 import type { Restaurant } from "../types/Restaurant";
-import { addRestaurant } from "../utils/AddRestaurant";
+import { addRestaurant } from "../utils/RestaurantAPI";
 import RestaurantsMenu from "../components/RestaurantsMenu";
 import RestaurantInput from "../components/forms/RestaurantInput";
 import RatingInput from "../components/forms/RatingInput";
@@ -66,6 +66,24 @@ export default function Restaurants() {
             });
     };
 
+    const updatedRestaurant = async (updated: Restaurant) => {
+        try {
+            if (updated.visited) {
+                // Replace in haveEaten list
+                setHaveEaten((prev) =>
+                    prev.map((r) => (r.id === updated.id ? updated : r))
+                );
+            } else {
+                // Replace in wantToEat list
+                setWantToEat((prev) =>
+                    prev.map((r) => (r.id === updated.id ? updated : r))
+                );
+            }
+        } catch (error) {
+            console.error("Error updating restaurant:", error);
+        }
+    };
+
     const setToVisited = async (id: number, rating: number) => {
         if (!id) return;
 
@@ -109,16 +127,11 @@ export default function Restaurants() {
         }
     };
 
-    useEffect(() => {
-        console.log("f", filter);
-        console.log(data.sort(filterFunctions[filter]));
-    }, [filter]);
-
     return (
         <div className="p-6">
             {showRestaurantInput && (
                 <RestaurantInput
-                    categories={categories}
+                    // categories={categories}
                     onSubmit={newRestaurant}
                     onClose={() => setShowRestaurantInput(false)}
                 />
@@ -172,6 +185,7 @@ export default function Restaurants() {
                         <RestaurantModal
                             key={r.id}
                             restaurant={r}
+                            setRestaurant={updatedRestaurant}
                             setShowRatingInput={() => {
                                 setShowRatingInput(r.id!);
                             }}

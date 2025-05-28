@@ -4,23 +4,20 @@ import type { Category } from "../../types/Category";
 type CategoryInputProps = {
     categories: Category[];
     setFormCategories: (selected: Category[]) => void;
+    preSelectedCategories?: Category[];
 };
 
 export default function CategoryInput({
     categories: initialCategories,
     setFormCategories,
+    preSelectedCategories,
 }: CategoryInputProps) {
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedCategories, setSelectedCategories] = useState<Category[]>(
-        []
+        preSelectedCategories ? preSelectedCategories : []
     );
     const [filterText, setFilterText] = useState("");
     const [categories, setCategories] = useState<Category[]>(initialCategories);
-
-    const setShowD = (v: boolean, source: string) => {
-        console.log("from", source);
-        setShowDropdown(v);
-    };
 
     useEffect(() => {
         console.log("sd", showDropdown);
@@ -72,9 +69,9 @@ export default function CategoryInput({
         <div className="relative w-full">
             <div
                 className="w-full border rounded px-3 py-2 flex flex-wrap gap-2 items-center cursor-text min-h-[42px]"
-                onClick={() => setShowD(!showDropdown, "2nd div onClick")}
+                onClick={() => setShowDropdown(!showDropdown)}
                 onBlur={() => {
-                    setShowD(false, "2nd div onBlur");
+                    setShowDropdown(false);
                 }}
             >
                 {selectedCategories.map((c) => (

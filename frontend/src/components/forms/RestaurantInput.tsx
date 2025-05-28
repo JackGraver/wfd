@@ -5,25 +5,41 @@ import type { Category } from "../../types/Category";
 import CategoryInput from "./CategoryInput";
 
 type InputPopupProps = {
-    categories: Category[];
+    // categories: Category[];
     onSubmit: (restaurant: Restaurant) => void;
     onClose: () => void;
+    editRestarant?: Restaurant;
 };
 
 export default function RestaurantInput({
-    categories,
+    // categories,
     onSubmit,
     onClose,
+    editRestarant,
 }: InputPopupProps) {
-    const [formData, setFormData] = useState<Restaurant>({
-        name: "",
-        categories: [],
-        price: 0,
-        description: "",
-        location: "",
-        rating: -1,
-        visited: false,
-    });
+    const [categories, setC] = useState<Category[]>([]);
+
+    useEffect(() => {
+        fetch("http://192.168.4.64:8000/categories")
+            .then((res) => res.json())
+            .then((data) => {
+                setC(data);
+            });
+    }, []);
+
+    const [formData, setFormData] = useState<Restaurant>(
+        editRestarant
+            ? editRestarant
+            : {
+                  name: "",
+                  categories: [],
+                  price: 0,
+                  description: "",
+                  location: "",
+                  rating: -1,
+                  visited: false,
+              }
+    );
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -58,20 +74,21 @@ export default function RestaurantInput({
                 <CategoryInput
                     categories={categories}
                     setFormCategories={setCategories}
+                    preSelectedCategories={formData.categories}
                 />
                 <input
                     type="number"
                     name="price"
                     autoComplete="off"
                     min={0}
-                    placeholder="Enter price level"
+                    value={formData.price}
+                    placeholder="Enter Approx. Price"
                     onChange={handleChange}
-                    value={formData.price ?? ""}
                     className="border rounded px-3 py-2"
                 />
                 <textarea
                     name="description"
-                    placeholder="Description"
+                    placeholder="Any Memorable Details?"
                     autoComplete="off"
                     value={formData.description}
                     onChange={handleChange}

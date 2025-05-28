@@ -1,15 +1,22 @@
+import { useEffect, useState } from "react";
 import type { Restaurant } from "../../types/Restaurant";
 import ModalLayout from "./ModalLayout";
+import RestaurantInput from "../forms/RestaurantInput";
+import { updateRestaurant } from "../../utils/RestaurantAPI";
 
 type RestaurantModalProps = {
     restaurant: Restaurant;
+    setRestaurant: (r: Restaurant) => void;
     setShowRatingInput: () => void;
 };
 
 export default function RestaurantModal({
     restaurant,
+    setRestaurant,
     setShowRatingInput,
 }: RestaurantModalProps) {
+    const [showEditInput, setShowEditInput] = useState(false);
+
     const getPriceSymbol = (val: number): string => {
         if (val <= 20) return "$";
         if (val <= 60) return "$$";
@@ -17,8 +24,29 @@ export default function RestaurantModal({
     };
     const priceSymbol = getPriceSymbol(restaurant.price);
 
+    const updatedRestaurant = async (restaurant: Restaurant) => {
+        console.log("ins res", restaurant);
+        updateRestaurant(restaurant)
+            .then((data) => {
+                setRestaurant(data);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+    };
+
     return (
-        <ModalLayout>
+        <ModalLayout onEdit={setShowEditInput} onDelete={() => {}}>
+            {showEditInput && (
+                <RestaurantInput
+                    // categories={[]}
+                    onSubmit={updatedRestaurant}
+                    onClose={() => {
+                        setShowEditInput(false);
+                    }}
+                    editRestarant={restaurant}
+                />
+            )}
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight">
                     {restaurant.name}

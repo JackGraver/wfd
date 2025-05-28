@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import LightDarkToggle from "./LightDarkToggle";
 
 export default function NavBar() {
     const location = useLocation();
@@ -7,9 +8,13 @@ export default function NavBar() {
 
     return (
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-[#CDB4DB] px-6 py-4 shadow">
-            <div className="text-4xl font-bold text-white">
-                <a href="/">g, WFD</a>
+            <div className="flex flex-row items-center gap-4">
+                <div className="text-4xl font-bold text-white">
+                    <a href="/">g, WFD</a>
+                </div>
+                <LightDarkToggle />
             </div>
+
             <div className="flex gap-4">
                 <a
                     href="/restaurants"
