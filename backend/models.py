@@ -89,7 +89,6 @@ class Ingredient(Base):
 class IngredientCreate(BaseModel):
     name: str
     
-    
 class Step(Base):
     __tablename__ = "steps"
 
@@ -121,6 +120,19 @@ class Recipe(Base):
     steps = relationship("Step", back_populates="recipe", cascade="all, delete-orphan", order_by="Step.step_number")
     
 class RecipeCreate(BaseModel):
+    name: str
+    prep_time: int
+    
+    calories: int
+    protein: int
+    fiber: int
+    
+    categories: List[CategoryCreate]
+    ingredients: List[IngredientCreate]
+    steps: List[StepCreate]
+    
+class RecipeUpdate(BaseModel):
+    id: int
     name: str
     prep_time: int
     

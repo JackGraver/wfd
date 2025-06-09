@@ -155,11 +155,15 @@ async def set_restaurant_visited(
 
     return restaurant
 
-
 @app.get("/recipes")
-async def get_restaurants(db: AsyncSession = Depends(get_db)):
+async def get_recipes(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Recipe).options(selectinload(Recipe.categories))
+        select(Recipe)
+        .options(
+            selectinload(Recipe.categories),
+            selectinload(Recipe.ingredients),
+            selectinload(Recipe.steps),
+        )
     )
     recipes = result.scalars().all()
 
@@ -212,3 +216,60 @@ async def create_recipe(recipe_data: RecipeCreate, db: AsyncSession = Depends(ge
     await db.refresh(new_recipe)
 
     return new_recipe
+
+@app.put("/recipes")
+async def update_recipe(
+    updated_recipe: RecipeUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    # Fetch existing recipe with categories
+    result = await db.execute(
+        select(Recipe)
+        .options(selectinload(Recipe.categories))
+        .where(Recipe.id == updated_recipe.id)
+    )
+    db_recipe = result.scalars().first()
+
+    if not db_recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    db_recipe.name = updated_recipe.name
+    db_recipe.prep_time = updated_recipe.prep_time
+    db_recipe.calories = updated_recipe.calories
+    db_recipe.protein = updated_recipe.protein
+    db_recipe.fiber = updated_recipe.fiber
+
+    updated_categories: List[Category] = []
+
+    if updated_recipe.categories:
+        existing_cat_ids = [c.id for c in updated_recipe.categories if c.id != -1]
+        new_cat_names = [c.name for c in updated_recipe.categories if c.id == -1]
+
+        if existing_cat_ids:
+            result = await db.execute(
+                select(Category).where(Category.id.in_(existing_cat_ids))
+            )
+            updated_categories.extend(result.scalars().all())
+
+        for name in new_cat_names:
+            new_cat = Category(name=name)
+            db.add(new_cat)
+            await db.flush()
+            updated_categories.append(new_cat)
+
+    db_recipe.categories = updated_categories
+
+    await db.commit()
+    await db.refresh(db_recipe)
+    return db_recipe
+
+@app.delete("/recipes/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_restaurant(id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    db_recipe = result.scalars().first()
+
+    if not db_recipe:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    await db.delete(db_recipe)
+    await db.commit()

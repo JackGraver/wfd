@@ -10,7 +10,12 @@ export default function NavBar() {
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-[#CDB4DB] px-6 py-4 shadow">
             <div className="flex flex-row items-center gap-4">
                 <div className="text-4xl font-bold text-white">
-                    <a href="/">g, WFD</a>
+                    <a href="/">
+                        <img
+                            src="tonyyyy.png"
+                            className="h-12 w-12 rounded-md"
+                        />
+                    </a>
                 </div>
                 <LightDarkToggle />
             </div>

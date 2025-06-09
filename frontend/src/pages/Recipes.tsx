@@ -5,7 +5,7 @@ import RecipeInput from "../components/forms/RecipeInput";
 import RecipeMenu from "../components/RecipesMenu";
 import RecipeModal from "../components/modals/RecipeModal";
 import type { Category } from "../types/Category";
-import { addRecipe } from "../utils/AddRecipe";
+import { addRecipe } from "../utils/RecipeAPI";
 
 export default function Recipes() {
     const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -41,7 +41,6 @@ export default function Recipes() {
         <div className="p-6">
             {showPopup && (
                 <RecipeInput
-                    categories={categories}
                     onSubmit={newRecipe}
                     onClose={() => setShowPopup(false)}
                 />
@@ -62,7 +61,11 @@ export default function Recipes() {
 
             <div className="flex flex-row flex-wrap">
                 {recipes.map((r) => (
-                    <RecipeModal key={r.id} recipe={r} />
+                    <RecipeModal
+                        key={r.id}
+                        recipe={r}
+                        setRecipes={setRecipes}
+                    />
                 ))}
             </div>
         </div>

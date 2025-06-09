@@ -1,37 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InputPopup from "./InputPopup";
 import type { Ingredient, Step, Recipe } from "../../types/Recipe";
 import CategoryInput from "./CategoryInput";
 import type { Category } from "../../types/Category";
 
 type InputPopupProps = {
-    categories: Category[];
     onSubmit: (restaurant: Recipe) => void;
     onClose: () => void;
+    editRecipe?: Recipe;
 };
 
 export default function RecipeInput({
-    categories,
     onSubmit,
     onClose,
+    editRecipe,
 }: InputPopupProps) {
-    const [ingredients, setIngredients] = useState<Ingredient[]>([
-        { name: "" },
-    ]);
-    const [steps, setSteps] = useState<Step[]>([
-        { step_number: 1, instruction: "" },
-    ]);
+    const [ingredients, setIngredients] = useState<Ingredient[]>(
+        editRecipe?.ingredients ? editRecipe.ingredients : [{ name: "" }]
+    );
+    const [steps, setSteps] = useState<Step[]>(
+        editRecipe?.steps
+            ? editRecipe.steps
+            : [{ step_number: 1, instruction: "" }]
+    );
 
-    const [formData, setFormData] = useState<Recipe>({
-        name: "",
-        categories: [],
-        prep_time: 0,
-        calories: 0,
-        protein: 0,
-        fiber: 0,
-        steps: [],
-        ingredients: [],
-    });
+    const [categories, setC] = useState<Category[]>([]);
+
+    useEffect(() => {
+        fetch("http://192.168.4.64:8000/categories")
+            .then((res) => res.json())
+            .then((data) => {
+                setC(data);
+            });
+    }, []);
+
+    const [formData, setFormData] = useState<Recipe>(
+        editRecipe
+            ? editRecipe
+            : {
+                  name: "",
+                  categories: [],
+                  prep_time: 0,
+                  calories: 0,
+                  protein: 0,
+                  fiber: 0,
+                  steps: [],
+                  ingredients: [],
+              }
+    );
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -68,8 +84,8 @@ export default function RecipeInput({
     };
 
     const handleSubmit = (e: React.FormEvent) => {
-        formData.ingredients = ingredients;
-        formData.steps = steps;
+        formData.ingredients = ingredients.slice(0, -1);
+        formData.steps = steps.slice(0, -1);
         e.preventDefault();
         onSubmit(formData);
         onClose();
@@ -87,6 +103,7 @@ export default function RecipeInput({
                         <input
                             name="name"
                             placeholder="Recipe Name"
+                            value={formData.name}
                             className="w-full border rounded px-3 py-2"
                             autoComplete="off"
                             onChange={handleChange}
@@ -94,6 +111,7 @@ export default function RecipeInput({
                         <input
                             type="number"
                             name="prep_time"
+                            value={formData.prep_time}
                             placeholder="Preparation Time"
                             className="w-full border rounded px-3 py-2"
                             autoComplete="off"
@@ -105,6 +123,7 @@ export default function RecipeInput({
                         <input
                             type="number"
                             name="calories"
+                            value={formData.calories}
                             placeholder="Calories"
                             className="border rounded px-3 py-2"
                             autoComplete="off"
@@ -113,6 +132,7 @@ export default function RecipeInput({
                         <input
                             type="number"
                             name="protein"
+                            value={formData.protein}
                             placeholder="Protein"
                             className="border rounded px-3 py-2"
                             autoComplete="off"
@@ -121,6 +141,7 @@ export default function RecipeInput({
                         <input
                             type="number"
                             name="fiber"
+                            value={formData.fiber}
                             placeholder="Fiber"
                             className="border rounded px-3 py-2"
                             autoComplete="off"
